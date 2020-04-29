@@ -1235,8 +1235,8 @@ class MyTableWidget(QWidget):
         self.tCnt_lbl_RzPl.setText('tCenter [s] (optional):')
         self.dt_lbl_RzPl = QLabel(self.Rz_tab)
         self.dt_lbl_RzPl.setText('dt [s](optional) :')
-        self.Info_lbl_RzPl = QLabel(self.Rz_tab)
-        self.Info_lbl_RzPl.setText('More settings:next tab>>')
+        # self.Info_lbl_RzPl = QLabel(self.Rz_tab)
+        # self.Info_lbl_RzPl.setText('More settings:next tab>>')
         # self.Info2_lbl_RzPl = QLabel(self.Rz_tab)
         # self.Info2_lbl_RzPl.setText('Interp. matrix:next tab>>')
         # filter labels
@@ -1343,6 +1343,9 @@ class MyTableWidget(QWidget):
         self.Save_plot_RzPl = QComboBox(self.Rz_tab)
         self.Save_plot_RzPl.addItems(
             ['do not save', 'save as pdf', 'save as png'])
+        self.switch_plot_RzPl = QComboBox(self.Rz_tab)
+        self.switch_plot_RzPl.addItems(
+                ['default', 'velocimetry'])
         # plot buttom
         self.MinusTplot_butt_RzPl = QPushButton("< -dt", self.Rz_tab)
         self.PlusTplot_butt_RzPl = QPushButton("+dt >", self.Rz_tab)
@@ -1399,7 +1402,7 @@ class MyTableWidget(QWidget):
         sublayout_RzPl.addWidget(self.dtplot_lbl_RzPl, 3, 2)
         sublayout_RzPl.addWidget(self.dtplot_ed_RzPl, 3, 3)
         # Plot control
-        sublayout_RzPl.addWidget(self.Info_lbl_RzPl, 0, 12)
+        sublayout_RzPl.addWidget(self.switch_plot_RzPl, 0, 12)
         sublayout_RzPl.addWidget(self.ImgType_plot_RzPl, 1, 12)
         sublayout_RzPl.addWidget(self.type_plot_RzPl, 2, 12)
         sublayout_RzPl.addWidget(self.Save_plot_RzPl, 3, 7)
@@ -3013,84 +3016,142 @@ class MyTableWidget(QWidget):
 
                 # plotting
                 # initiate plot
-                self.figure_RzPl.clf()  # clear previous figure and axes
-                self._static_ax = self.static_canvas_RzPl.figure.subplots(
-                    1, 2, sharex=False, sharey=False)  # add axes
-                if (check_vmin_vmax == 1):
-                    levels_to_plot = np.linspace(vmin, vmax, NN_cont)
-                if (check_vmin_vmax == 0):
-                    levels_to_plot = NN_cont
-                contours = self._static_ax[0].contourf(
-                    RR_plot,
-                    zz_plot,
-                    data_plot_t,
-                    vmin=vmin,
-                    vmax=vmax,
-                    levels=levels_to_plot,
-                    cmap='jet')
-                cbar = self.figure_RzPl.colorbar(
-                    contours, ax=self._static_ax[0], pad=0.07)
-                cbar.ax.set_ylabel('deltaTrad/<Trad>', rotation=90)
-                if contour_check == '1':
-                    self._static_ax[0].contour(
+                # default plot 
+                if (self.switch_plot_RzPl.currentText() == 'default'):
+                    self.figure_RzPl.clf()  # clear previous figure and axes
+                    self._static_ax = self.static_canvas_RzPl.figure.subplots(
+                        1, 2, sharex=False, sharey=False)  # add axes
+                    if (check_vmin_vmax == 1):
+                        levels_to_plot = np.linspace(vmin, vmax, NN_cont)
+                    if (check_vmin_vmax == 0):
+                        levels_to_plot = NN_cont
+                    contours = self._static_ax[0].contourf(
                         RR_plot,
                         zz_plot,
                         data_plot_t,
                         vmin=vmin,
                         vmax=vmax,
                         levels=levels_to_plot,
-                        cmap='binary')
-                # cbar.ax.tick_params(labelsize=8, rotation=90)
-                self._static_ax[0].plot(RR_plot, zz_plot, "ko", ms=2)
+                        cmap='jet')
+                    cbar = self.figure_RzPl.colorbar(
+                        contours, ax=self._static_ax[0], pad=0.07)
+                    cbar.ax.set_ylabel('deltaTrad/<Trad>', rotation=90)
+                    if contour_check == '1':
+                        self._static_ax[0].contour(
+                            RR_plot,
+                            zz_plot,
+                            data_plot_t,
+                            vmin=vmin,
+                            vmax=vmax,
+                            levels=levels_to_plot,
+                            cmap='binary')
+                    # cbar.ax.tick_params(labelsize=8, rotation=90)
+                    self._static_ax[0].plot(RR_plot, zz_plot, "ko", ms=2)
 
-                if (self.Interp_plot_RzPl.currentText() == 'set to zero') | (
-                        self.Interp_plot_RzPl.currentText() == 'with interpolation'):
-                    self._static_ax[0].plot(
-                        RR_plot[interp_mask], zz_plot[interp_mask], "wo", ms=6)
+                    if (self.Interp_plot_RzPl.currentText() == 'set to zero') | (
+                            self.Interp_plot_RzPl.currentText() == 'with interpolation'):
+                        self._static_ax[0].plot(
+                            RR_plot[interp_mask], zz_plot[interp_mask], "wo", ms=6)
 
-                self._static_ax[0].set_xlabel("R [m]")
-                self._static_ax[0].set_ylabel("z [m]")
-                self._static_ax[0].set_title("t = %0.7g" % (time_plot_t))
+                    self._static_ax[0].set_xlabel("R [m]")
+                    self._static_ax[0].set_ylabel("z [m]")
+                    self._static_ax[0].set_title("t = %0.7g" % (time_plot_t))
 
-                for i, txt in enumerate(ch_zz):
-                    self._static_ax[0].annotate(
-                        txt + 1, (RR_plot[i, 0], zz_plot[i, 0]), fontsize=8)
+                    for i, txt in enumerate(ch_zz):
+                        self._static_ax[0].annotate(
+                            txt + 1, (RR_plot[i, 0], zz_plot[i, 0]), fontsize=8)
 
-                for i, txt in enumerate(ch_RR):
-                    self._static_ax[0].annotate(
-                        txt + 1, (RR_plot[0, i], zz_plot[0, i]), fontsize=8)
+                    for i, txt in enumerate(ch_RR):
+                        self._static_ax[0].annotate(
+                            txt + 1, (RR_plot[0, i], zz_plot[0, i]), fontsize=8)
 
-                self._static_ax[1].plot(time_plot, trace_1D)
-                self._static_ax[1].set_xlabel("t [s]")
-                self._static_ax[1].set_ylabel("deltaTrad/<Trad>")
-                self._static_ax[1].set_title(
-                    "LOS = 7, R_ch = 4, dt resolut = %g s" %
-                    (time_plot[1] - time_plot[0]))
-                self._static_ax[1].axvline(x=time_plot_t, color="k")
+                    self._static_ax[1].plot(time_plot, trace_1D)
+                    self._static_ax[1].set_xlabel("t [s]")
+                    self._static_ax[1].set_ylabel("deltaTrad/<Trad>")
+                    self._static_ax[1].set_title(
+                        "LOS = 7, R_ch = 4, dt resolut = %g s" %
+                        (time_plot[1] - time_plot[0]))
+                    self._static_ax[1].axvline(x=time_plot_t, color="k")
 
-                self.figure_RzPl.suptitle(
-                    "ECEI, Shot #%d, Filter: %s" %
-                    (self.Shot, filter_status), fontsize=10)
-                if (self.Save_plot_RzPl.currentText() == 'save as pdf') | (
-                        (self.Save_plot_RzPl.currentText() == 'save as pdf') & (self.counter_save == 0)):
-                    path_to_save = self.path_ed_RzSet.text()
-                    self.figure_RzPl.savefig(
-                        path_to_save + 'p_%03d.pdf' %
-                        (self.counter_save), bbox_inches='tight')
-                    self.counter_save += 1
-                if (self.Save_plot_RzPl.currentText() == 'save as png') | (
-                        (self.Save_plot_RzPl.currentText() == 'save as pdf') & (self.counter_save == 0)):
-                    path_to_save = self.path_ed_RzSet.text()
-                    self.figure_RzPl.savefig(
-                        path_to_save + 'p_%03d.png' %
-                        (self.counter_save), bbox_inches='tight')
-                    self.counter_save += 1
-                click_coord = self.static_canvas_RzPl.mpl_connect(
-                    'button_press_event', self.mouse_click_Rz)
-                self.static_canvas_RzPl.draw()
-                self.sync_tabs(9)
-                print("+++ The data has been plotted succesfully. +++")
+                    self.figure_RzPl.suptitle(
+                        "ECEI, Shot #%d, Filter: %s" %
+                        (self.Shot, filter_status), fontsize=10)
+                    if (self.Save_plot_RzPl.currentText() == 'save as pdf') | (
+                            (self.Save_plot_RzPl.currentText() == 'save as pdf') & (self.counter_save == 0)):
+                        path_to_save = self.path_ed_RzSet.text()
+                        self.figure_RzPl.savefig(
+                            path_to_save + 'p_%03d.pdf' %
+                            (self.counter_save), bbox_inches='tight')
+                        self.counter_save += 1
+                    if (self.Save_plot_RzPl.currentText() == 'save as png') | (
+                            (self.Save_plot_RzPl.currentText() == 'save as pdf') & (self.counter_save == 0)):
+                        path_to_save = self.path_ed_RzSet.text()
+                        self.figure_RzPl.savefig(
+                            path_to_save + 'p_%03d.png' %
+                            (self.counter_save), bbox_inches='tight')
+                        self.counter_save += 1
+                    click_coord = self.static_canvas_RzPl.mpl_connect(
+                        'button_press_event', self.mouse_click_Rz)
+                    self.static_canvas_RzPl.draw()
+                    self.sync_tabs(9)
+                    print("+++ The data has been plotted succesfully. +++")
 
+                if (self.switch_plot_RzPl.currentText() == 'velocimetry'):
+                    self.figure_RzPl.clf()  # clear previous figure and axes
+                    # fig = plt.figure(frameon=False)
+                    # fig.set_size_inches(w,h)
+                    # ax = self.figure_RzPl(frameon=False)
+                    ax = self.figure_RzPl.add_subplot(111,frameon=False)  # add axes
+                    if (check_vmin_vmax == 1):
+                        levels_to_plot = np.linspace(vmin, vmax, NN_cont)
+                    if (check_vmin_vmax == 0):
+                        levels_to_plot = NN_cont
+                    contours = ax.contourf(
+                        RR_plot,
+                        zz_plot,
+                        data_plot_t,
+                        vmin=vmin,
+                        vmax=vmax,
+                        levels=levels_to_plot,
+                        cmap='gray')
+                    if contour_check == '1':
+                        ax.contour(
+                            RR_plot,
+                            zz_plot,
+                            data_plot_t,
+                            vmin=vmin,
+                            vmax=vmax,
+                            levels=levels_to_plot,
+                            cmap='binary')
+                    ax.plot(RR_plot, zz_plot, "ko", ms=2)
+
+                    if (self.Interp_plot_RzPl.currentText() == 'set to zero') | (
+                            self.Interp_plot_RzPl.currentText() == 'with interpolation'):
+                        ax.plot(
+                            RR_plot[interp_mask], zz_plot[interp_mask], "wo", ms=6)
+
+                    ax.axis('scaled')
+                    ax.set_axis_off()
+                    
+                    if (self.Save_plot_RzPl.currentText() == 'save as pdf') | (
+                            (self.Save_plot_RzPl.currentText() == 'save as pdf') & (self.counter_save == 0)):
+                        path_to_save = self.path_ed_RzSet.text()
+                        self.figure_RzPl.savefig(
+                            path_to_save + 'p_%03d.pdf' %
+                            (self.counter_save), bbox_inches='tight')
+                        self.counter_save += 1
+                    if (self.Save_plot_RzPl.currentText() == 'save as png') | (
+                            (self.Save_plot_RzPl.currentText() == 'save as pdf') & (self.counter_save == 0)):
+                        path_to_save = self.path_ed_RzSet.text()
+                        self.figure_RzPl.savefig(
+                            path_to_save + 'p_%03d.png' %
+                            (self.counter_save), bbox_inches='tight')
+                        self.counter_save += 1
+                    click_coord = self.static_canvas_RzPl.mpl_connect(
+                        'button_press_event', self.mouse_click_Rz)
+                    self.static_canvas_RzPl.draw()
+                    self.sync_tabs(9)
+                    print("+++ The data has been plotted succesfully. +++")
             except Exception as exc:
                 traceback.print_exc()
                 print("!!! Cannot plot. ERROR: %s" % (exc))
