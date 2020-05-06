@@ -30,8 +30,8 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.title = 'ECEI_plot'
-        self.left = 500
-        self.top = 200
+        self.left = 100
+        self.top = 100
         self.width = 1400
         self.height = 900
         self.setWindowTitle(self.title)
@@ -1235,10 +1235,6 @@ class MyTableWidget(QWidget):
         self.tCnt_lbl_RzPl.setText('tCenter [s] (optional):')
         self.dt_lbl_RzPl = QLabel(self.Rz_tab)
         self.dt_lbl_RzPl.setText('dt [s](optional) :')
-        # self.Info_lbl_RzPl = QLabel(self.Rz_tab)
-        # self.Info_lbl_RzPl.setText('More settings:next tab>>')
-        # self.Info2_lbl_RzPl = QLabel(self.Rz_tab)
-        # self.Info2_lbl_RzPl.setText('Interp. matrix:next tab>>')
         # filter labels
         self.Fourier_lbl0_RzPl = QLabel(self.Rz_tab)
         self.Fourier_lbl0_RzPl.setText('Fourier lowpass f [kHz]:')
@@ -1303,7 +1299,7 @@ class MyTableWidget(QWidget):
         self.Fourier2_cut_RzPl = QLineEdit(self.Rz_tab)
         self.Fourier2_cut_RzPl.setText('2.0')
         self.SavGol_ed0_RzPl = QLineEdit(self.Rz_tab)
-        self.SavGol_ed0_RzPl.setText('21')
+        self.SavGol_ed0_RzPl.setText('11')
         self.SavGol_ed0_RzPl.setMinimumSize(QtCore.QSize(20, 0))
         self.SavGol_ed1_RzPl = QLineEdit(self.Rz_tab)
         self.SavGol_ed1_RzPl.setText('3')
@@ -1313,12 +1309,12 @@ class MyTableWidget(QWidget):
         self.Contour_ed_RzPl = QLineEdit(self.Rz_tab)
         self.Contour_ed_RzPl.setText('0')
         self.NNcont_ed_RzPl = QLineEdit(self.Rz_tab)
-        self.NNcont_ed_RzPl.setText('20')
+        self.NNcont_ed_RzPl.setText('60')
         self.tplot_ed_RzPl = QLineEdit(self.Rz_tab)
         self.tplot_ed_RzPl.setText('4.488550')
         self.tplot_ed_RzPl.setMinimumSize(QtCore.QSize(50, 0))
         self.dtplot_ed_RzPl = QLineEdit(self.Rz_tab)
-        self.dtplot_ed_RzPl.setText('1.0e-5')
+        self.dtplot_ed_RzPl.setText('5.0e-6')
         self.dtplot_ed_RzPl.setMinimumSize(QtCore.QSize(50, 0))
         self.FourMult_ed_RzPl = QLineEdit(self.Rz_tab)
         self.FourMult_ed_RzPl.setText('13.0,15.0;26,30')
@@ -1354,6 +1350,26 @@ class MyTableWidget(QWidget):
         self.PlusTplot_butt_RzPl.clicked.connect(lambda: self.f_Rz_plot(2))
         self.tplot_butt_RzPl.clicked.connect(lambda: self.f_Rz_plot(3))
 
+        # Shortcuts
+        shortcut_plot_Rz = QShortcut(QKeySequence("Ctrl+p"),
+                                     self.tplot_butt_RzPl)
+        shortcut_plot_Rz.activated.connect(lambda: self.f_Rz_plot(3))
+        shortcut_plot_Rz.setEnabled(True)
+
+        shortcut_next_Rz = QShortcut(QKeySequence("Ctrl+j"),
+                                     self.PlusTplot_butt_RzPl)
+        shortcut_next_Rz.activated.connect(lambda: self.f_Rz_plot(2))
+        shortcut_next_Rz.setEnabled(True)
+
+        shortcut_prev_Rz = QShortcut(QKeySequence("Ctrl+k"),
+                                     self.MinusTplot_butt_RzPl)
+        shortcut_prev_Rz.activated.connect(lambda: self.f_Rz_plot(1))
+        shortcut_prev_Rz.setEnabled(True)
+
+        shortcut_tC_Rz = QShortcut(QKeySequence("Ctrl+t"),
+                                   self.Butt_dt_RzPl)
+        shortcut_tC_Rz.activated.connect(lambda: self.tBE_from_tCnt(9))
+        shortcut_tC_Rz.setEnabled(True)
         # Add widgets to layout
         # First row
         sublayout_RzPl.setSpacing(2)
@@ -1620,7 +1636,9 @@ class MyTableWidget(QWidget):
                 tE = t + dt / 2.0
                 self.tB_ed_RzPl.setText('%0.7g' % (tB))
                 self.tE_ed_RzPl.setText('%0.7g' % (tE))
-            self.tplot_ed_RzPl.setText('%0.7g' % (np.mean([tB, tE])))
+                self.tplot_ed_RzPl.setText('%0.7g' % (np.mean([tB, tE])))
+                self.f_Rz_plot(3)
+
         except Exception as exc:
             print("!!! Incorrect input. ERROR: %s" % (exc))
         pass
@@ -3098,9 +3116,6 @@ class MyTableWidget(QWidget):
 
                 if (self.switch_plot_RzPl.currentText() == 'velocimetry'):
                     self.figure_RzPl.clf()  # clear previous figure and axes
-                    # fig = plt.figure(frameon=False)
-                    # fig.set_size_inches(w,h)
-                    # ax = self.figure_RzPl(frameon=False)
                     ax = self.figure_RzPl.add_subplot(111,frameon=False)  # add axes
                     if (check_vmin_vmax == 1):
                         levels_to_plot = np.linspace(vmin, vmax, NN_cont)
@@ -3159,15 +3174,12 @@ class MyTableWidget(QWidget):
             print("Please load the ECEI data (first tab)")
 
     def mouse_click_Rz(self, event):
-        global ix, iy
-        global coords
         ix, iy = event.xdata, event.ydata
         print('x = %07g, y = %07g' % (
             ix, iy))
         self.tplot_ed_RzPl.setText("%0.7g" % (ix))
-        coords = []
-        coords.append((ix, iy))
-        return coords
+        if (event.dblclick == True) & (event.button == 1):
+            self.f_Rz_plot(3)
 
     def sync_tabs(self, number):
         try:
