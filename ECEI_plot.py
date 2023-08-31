@@ -6,23 +6,14 @@ import os
 from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QComboBox, QLabel, QLineEdit, QShortcut, QCheckBox
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
 from PyQt5.QtCore import pyqtSlot, QRect
-from matplotlib.backends.qt_compat import QtCore, QtWidgets, is_pyqt5
+from matplotlib.backends.qt_compat import QtCore, QtWidgets
 from matplotlib.backends.backend_qt5agg import (
     FigureCanvas, NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 import numpy as np
 import traceback  # better way to handle exceptions
-import pathlib
-path_of_the_current_file = str(os.path.dirname(os.path.realpath(__file__)))
-os.chdir(path_of_the_current_file)
-sys.path.append('/afs/ipp/aug/ads-diags/common/python/lib')
-sys.path.append(path_of_the_current_file + '/modules')
-import my_funcs_class as my_funcs
-import ECI_Load_osam as ECI
-import TDI_Load_osam as TDI
-importlib.reload(TDI)
-importlib.reload(ECI)
-importlib.reload(my_funcs)
+import modules.my_funcs_class as my_funcs
+import modules.ECI_sfLoad_osam as ECI
 
 
 class App(QMainWindow):
@@ -238,7 +229,7 @@ class MyTableWidget(QWidget):
         sublayout_plCh.addWidget(self.Butt_plot_plCh, 1, 12)
 
         # Add matplotlib plot
-        self.figure_plCh = Figure(figsize=(5, 3), constrained_layout=False)
+        self.figure_plCh = Figure(figsize=(5, 3))
         self.static_canvas_plCh = FigureCanvas(self.figure_plCh)
         layout_plCh.addWidget(
             self.static_canvas_plCh,
@@ -369,7 +360,7 @@ class MyTableWidget(QWidget):
         sublayout_LOS.addWidget(self.Butt_plot_LOS, 1, 12)
 
         # Add matplotlib plot
-        self.figure_LOS = Figure(figsize=(5, 3), constrained_layout=True)
+        self.figure_LOS = Figure(figsize=(5, 3))
         self.static_canvas_LOS = FigureCanvas(self.figure_LOS)
         layout_LOS.addWidget(
             self.static_canvas_LOS,
@@ -497,7 +488,7 @@ class MyTableWidget(QWidget):
         sublayout_FFT.addWidget(self.Butt_plot_FFT, 1, 12)
 
         # Add matplotlib plot
-        self.figure_FFT = Figure(figsize=(5, 3), constrained_layout=True)
+        self.figure_FFT = Figure(figsize=(5, 3))
         self.static_canvas_FFT = FigureCanvas(self.figure_FFT)
         layout_FFT.addWidget(
             self.static_canvas_FFT,
@@ -668,7 +659,7 @@ class MyTableWidget(QWidget):
         sublayout_Rtr.addWidget(self.Butt_plot_Rtr, 2, 12)
 
         # Add matplotlib plot
-        self.figure_Rtr = Figure(figsize=(5, 3), constrained_layout=True)
+        self.figure_Rtr = Figure(figsize=(5, 3))
         self.static_canvas_Rtr = FigureCanvas(self.figure_Rtr)
         layout_Rtr.addWidget(
             self.static_canvas_Rtr,
@@ -837,7 +828,7 @@ class MyTableWidget(QWidget):
         sublayout_Rsing.addWidget(self.Butt_plot_Rsing, 2, 12)
 
         # Add matplotlib plot
-        self.figure_Rsing = Figure(figsize=(5, 3), constrained_layout=False)
+        self.figure_Rsing = Figure(figsize=(5, 3))
         self.static_canvas_Rsing = FigureCanvas(self.figure_Rsing)
         layout_Rsing.addWidget(
             self.static_canvas_Rsing,
@@ -993,7 +984,7 @@ class MyTableWidget(QWidget):
         sublayout_Ztr.addWidget(self.Butt_plot_Ztr, 2, 12)
 
         # Add matplotlib plot
-        self.figure_Ztr = Figure(figsize=(5, 3), constrained_layout=True)
+        self.figure_Ztr = Figure(figsize=(5, 3))
         self.static_canvas_Ztr = FigureCanvas(self.figure_Ztr)
         layout_Ztr.addWidget(
             self.static_canvas_Ztr,
@@ -1155,7 +1146,7 @@ class MyTableWidget(QWidget):
         sublayout_Zsing.addWidget(self.Butt_plot_Zsing, 2, 12)
 
         # Add matplotlib plot
-        self.figure_Zsing = Figure(figsize=(5, 3), constrained_layout=False)
+        self.figure_Zsing = Figure(figsize=(5, 3))
         self.static_canvas_Zsing = FigureCanvas(self.figure_Zsing)
         layout_Zsing.addWidget(
             self.static_canvas_Zsing,
@@ -1205,7 +1196,7 @@ class MyTableWidget(QWidget):
         sublayout_EQHt.addWidget(self.Butt_plot_EQHt, 0, 6)
 
         # Add matplotlib plot
-        self.figure_EQHt = Figure(figsize=(5, 3), constrained_layout=False)
+        self.figure_EQHt = Figure(figsize=(5, 3))
         self.static_canvas_EQHt = FigureCanvas(self.figure_EQHt)
         layout_EQHt.addWidget(
             self.static_canvas_EQHt,
@@ -1429,7 +1420,7 @@ class MyTableWidget(QWidget):
         sublayout_RzPl.addWidget(self.tplot_butt_RzPl, 3, 12)
 
         # Add matplotlib plot
-        self.figure_RzPl = Figure(figsize=(5, 3), constrained_layout=False)
+        self.figure_RzPl = Figure(figsize=(5, 3))
         self.static_canvas_RzPl = FigureCanvas(self.figure_RzPl)
         layout_RzPl.addWidget(
             self.static_canvas_RzPl,
@@ -1640,6 +1631,9 @@ class MyTableWidget(QWidget):
                 self.f_Rz_plot(3)
 
         except Exception as exc:
+            # Handle the error gracefully
+            tb = traceback.format_exc()
+            print(f"An error occurred: {exc}\nTraceback:\n{tb}")
             print("!!! Incorrect input. ERROR: %s" % (exc))
         pass
 
@@ -1653,6 +1647,9 @@ class MyTableWidget(QWidget):
             allow_to_load = True
             self.Shot_ed_EQHt.setText(self.Shot_ed_load.text())
         except Exception as exc:
+            # Handle the error gracefully
+            tb = traceback.format_exc()
+            print(f"An error occurred: {exc}\nTraceback:\n{tb}")
             print("!!! Incorrect input. ERROR: %s" % (exc))
             self.Monitor_load.setText("Status:\nPlease enter shot number.")
             allow_to_load = False
@@ -1685,6 +1682,9 @@ class MyTableWidget(QWidget):
                 self.data_loaded = True
                 print("+++ The data has been loaded succesfully. +++")
             except Exception as exc:
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
                 print("!!! Coudn't load TDI. ERROR: %s" % (exc))
                 self.Monitor_load.setText(
                     "Status:\nError in loading ECI data.")
@@ -1716,6 +1716,9 @@ class MyTableWidget(QWidget):
                 self.data_loaded = True
                 print("+++ The data has been loaded succesfully. +++")
             except Exception as exc:
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
                 print("!!! Coudn't load ECI. ERROR: %s" % (exc))
                 self.Monitor_load.setText(
                     "Status:\nError in loading ECI data.")
@@ -1821,7 +1824,9 @@ class MyTableWidget(QWidget):
                 self.sync_tabs(1)
                 print("+++ The data has been plotted succesfully. +++")
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -1935,7 +1940,9 @@ class MyTableWidget(QWidget):
                 self.sync_tabs(2)
                 print("+++ The data has been plotted succesfully. +++")
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -2049,7 +2056,9 @@ class MyTableWidget(QWidget):
                 self.sync_tabs(3)
                 print("+++ The data has been plotted succesfully. +++")
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -2208,7 +2217,9 @@ class MyTableWidget(QWidget):
                 print("+++ The data has been plotted succesfully. +++")
 
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -2379,7 +2390,9 @@ class MyTableWidget(QWidget):
                 print("+++ The data has been plotted succesfully. +++")
 
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -2540,7 +2553,9 @@ class MyTableWidget(QWidget):
                 print("+++ The data has been plotted succesfully. +++")
 
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -2701,7 +2716,9 @@ class MyTableWidget(QWidget):
                 print("+++ The data has been plotted succesfully. +++")
 
             except Exception as exc:
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -2722,7 +2739,9 @@ class MyTableWidget(QWidget):
                 self.ECEId = mf.ECEId_cal
                 self.data_calibrated = True
             except Exception as exc:
-                print("!!! Cannot cross calibrate. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data")
 
@@ -2732,7 +2751,9 @@ class MyTableWidget(QWidget):
             self.time_EQH = float(self.timepl_ed_EQHt.text())
             allow_to_load = True
         except Exception as exc:
-            print("!!! Incorrect input. ERROR: %s" % (exc))
+            # Handle the error gracefully
+            tb = traceback.format_exc()
+            print(f"An error occurred: {exc}\nTraceback:\n{tb}")
             allow_to_load = False
 
         if (allow_to_load):
@@ -2825,7 +2846,10 @@ class MyTableWidget(QWidget):
                 print("+++ EQH has been plotted +++")
 
             except Exception as exc:
-                print("!!! Couldn't load EQH, CEC, fakeRz. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
+                print("!!! Couldn't load EQH, CEC, fakeRz")
 
     def f_Rz_plot(self, which_plot):
         if (self.data_loaded):  # check whether ECEI data is loaded
@@ -3168,8 +3192,9 @@ class MyTableWidget(QWidget):
                     self.sync_tabs(9)
                     print("+++ The data has been plotted succesfully. +++")
             except Exception as exc:
-                traceback.print_exc()
-                print("!!! Cannot plot. ERROR: %s" % (exc))
+                # Handle the error gracefully
+                tb = traceback.format_exc()
+                print(f"An error occurred: {exc}\nTraceback:\n{tb}")
         else:
             print("Please load the ECEI data (first tab)")
 
@@ -3353,7 +3378,10 @@ class MyTableWidget(QWidget):
             self.Binning_ed_RzPl.setText(Binning_ed)
 
         except Exception as exc:
-            print("!!! Couldn't synchronize tabs. ERROR: %s" % (exc))
+            # Handle the error gracefully
+            tb = traceback.format_exc()
+            print(f"An error occurred: {exc}\nTraceback:\n{tb}")
+            print("!!! Couldn't synchronize tabs.")
 
 
 # -------------------------------------------------------------------------------------------

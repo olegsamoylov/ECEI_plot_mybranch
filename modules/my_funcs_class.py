@@ -170,6 +170,7 @@ class my_funcs:
         try:
             for NL in range(N_LOS):
                 for NR in range(N_R):
+                    ECEI_data[np.isnan(ECEI_data)] = 0.0
                     ECEId_savgol[:, NL, NR] = savgol_filter(ECEI_data[:, NL, NR], win_len, pol_ord)
             #
             self.ECEId_savgol = ECEId_savgol
