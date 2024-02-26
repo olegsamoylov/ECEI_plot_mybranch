@@ -85,3 +85,12 @@ class ECI:
         self.N_LOS = N_LOS
         self.N_R = N_R
         print("FakeRz has been loaded")
+        
+    def Load_RZO(self):
+        sfload_RZO = sf.SFREAD("RZO", self.Shotnumber, experiment="OSAM", edition=int(0))
+        
+        self.R = sfload_RZO.getobject('R')[:,:,::-1] #revers R array #revers R array
+        self.z = sfload_RZO.getobject('z')[:,:,::-1] #revers R array #revers R array
+        self.rhop = sfload_RZO.getobject('rho')[:,:,::-1] #revers R array #revers R array
+        self.time_rzo = sfload_RZO.getobject('time')
+        print("RZO has been loaded")

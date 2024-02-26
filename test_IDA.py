@@ -1,18 +1,18 @@
 import numpy as np
 import aug_sfutils as sf
-import modules.ECI_sfLoad_osam as ECI
+import modules.IDA_sfLoad_osam as IDA
 
 
-Diagnostic = "ECI"
+Diagnostic = "IDA"
 Experiment = "AUGD"
 Shotnumber = int(25781)
 Edition = int(0)
 # tBegin = 2.1
 # tEnd = 2.6
 
-EI=ECI.ECI()
-EI.Load(Shotnumber)
-EI.Load_RZO()
+ID=IDA.IDA()
+ID.Load(Shotnumber)
+ID.Load(Shotnumber, tBegin=1., tEnd=4.)
 
 """
 sfload = sf.SFREAD(Diagnostic, Shotnumber, experiment=Experiment, edition=Edition)

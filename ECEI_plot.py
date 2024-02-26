@@ -1409,7 +1409,7 @@ class MyTableWidget(QWidget):
         sublayout_RzPl.addWidget(self.dtplot_lbl_RzPl, 3, 2)
         sublayout_RzPl.addWidget(self.dtplot_ed_RzPl, 3, 3)
         # Plot control
-        sublayout_RzPl.addWidget(self.switch_plot_RzPl, 0, 12)
+        # sublayout_RzPl.addWidget(self.switch_plot_RzPl, 0, 12)
         sublayout_RzPl.addWidget(self.ImgType_plot_RzPl, 1, 12)
         sublayout_RzPl.addWidget(self.type_plot_RzPl, 2, 12)
         sublayout_RzPl.addWidget(self.Save_plot_RzPl, 3, 7)
@@ -2758,9 +2758,10 @@ class MyTableWidget(QWidget):
 
         if (allow_to_load):
             try:
-                import EQH_Load_osam as EQH
-                import ECE_Load_osam as ECE
+                import EQH_sfLoad_osam as EQH
+                import ECE_sfLoad_osam as ECE
                 import importlib
+                import aug_sfutils as sf
                 importlib.reload(EQH)
                 importlib.reload(ECE)
                 import matplotlib.pyplot as plt
@@ -2773,15 +2774,18 @@ class MyTableWidget(QWidget):
                 print("+++ EQH has been loaded +++")
 
                 # load CEC
+                self.eqm = sf.EQU(self.Shot_EQH, diag="EQH")
                 EC = ECE.ECE()
-                EC.Load(self.Shot_EQH, Diagnostic='CEC', tBegin=0.0, tEnd=10.0)
+                EC.Load(eqm = self.eqm, Shotnumber=self.Shot_EQH, Diagnostic='CEC', tBegin=0.0, tEnd=10.0)
                 EC.remove0chs()
                 idx_rztime = EC.find_nearest_idx(EC.rztime, self.time_EQH)
                 print("+++ CEC has been loaded +++")
 
-                # load fake R and z
+                # load fake R and z from the mixer frequency and magn. field
+                # use fake R and z only for general overview
+                # correct way: ray tracing
                 N_LOS, N_R = 20, 8
-                path_to_eceilog = '/afs/ipp-garching.mpg.de/home/e/ecei/LOG_ECEI/'
+                path_to_eceilog = '/shares/departments/AUG/users/osam/LOG_ECEI/'
                 with open(path_to_eceilog + "%d.log" % (self.Shot_EQH), 'r') as f:
                     ECEI_LOG = f.read()
                 if (self.Shot_EQH > 30000):
@@ -2812,8 +2816,8 @@ class MyTableWidget(QWidget):
                 R_array = 2 * e * np.abs(Bt) * R0 / \
                     (2 * np.pi * m_e * f_array * 1.e9)
                 R_array = R_array[::-1]
-                z_array = 0.030 * np.ones(len(R_array))
-                # RR_array, zz_array = np.meshgrid(R_array,z_array)
+                # z_array = 0.030 * np.ones(len(R_array))
+                RR_array, zz_array = np.meshgrid(R_array,z_array)
                 print("+++ FakeRz has been created +++")
 
                 # initiate plot
@@ -2827,12 +2831,12 @@ class MyTableWidget(QWidget):
                     ax.annotate(
                         txt, (EC.R[idx_rztime][i], EC.z[idx_rztime][i] + 0.002), fontsize=8)
                 ax.plot(EC.R[idx_rztime], EC.z[idx_rztime], "ko", label="CEC")
-
-                ax.plot(R_array, z_array, "bo", label="ECEI_fakeRz")
+                # ax.plot(R_array, z_array, "bo", label="ECEI_fakeRz")
+                ax.plot(RR_array, zz_array, "bo", label="ECEI_fakeRz")
                 my_text_2 = np.arange(1, 9)
-                for i, txt in enumerate(my_text_2):
-                    ax.annotate(
-                        txt, (R_array[i], z_array[i] + 0.002), fontsize=8)
+                # for i, txt in enumerate(my_text_2):
+                    # ax.annotate(
+                        # txt, (R_array[i], z_array[i] + 0.002), fontsize=8)
 
                 ax.set_xlabel("R [m]")
                 ax.set_ylabel("z [m]")
@@ -3199,10 +3203,16 @@ class MyTableWidget(QWidget):
             print("Please load the ECEI data (first tab)")
 
     def mouse_click_Rz(self, event):
-        ix, iy = event.xdata, event.ydata
-        print('x = %07g, y = %07g' % (
-            ix, iy))
-        self.tplot_ed_RzPl.setText("%0.7g" % (ix))
+        if event.button == 1:
+            ix, iy = event.xdata, event.ydata
+            print('x = %07g, y = %07g' % (
+                ix, iy))
+            self.tplot_ed_RzPl.setText("%0.7g" % (ix))
+        elif event.button == 3:
+            ix, iy = event.xdata, event.ydata
+            print('x = %07g, y = %07g' % (
+                ix, iy))
+
         if (event.dblclick == True) & (event.button == 1):
             self.f_Rz_plot(3)
 

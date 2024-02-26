@@ -2,7 +2,7 @@
 to use these functions inside other python programs, paste the following:
 import sys
 sys.path.append("/afs/ipp-garching.mpg.de/home/o/osam/workspace/python3_projects/modules_osam")
-import EQH_Load_osam as EQH
+import EQH_sfLoad_osam as EQH
 import importlib
 importlib.reload(EQH)
 then use as
@@ -10,12 +10,9 @@ EQ=EQH.EQH()
 EQ.Load(Shot)
 EQ.Load(Shot, tBegin = 2.0, tEnd = 4.0)
 """
-import sys
-sys.path.append("/afs/ipp-garching.mpg.de/aug/ads-diags/common/python/lib")
 import numpy as np
-import dd_20190506 as dd
 from scipy.interpolate import interp1d
-# import map_equ_20190429 as equ
+import aug_sfutils as sf
 
 class EQHhelp:
     status = False
@@ -27,24 +24,27 @@ class EQH:
             self.Load( Shotnumber )
 
     def Load( self ,  Shotnumber, Experiment='AUGD', Diagnostic='EQH', Edition = 0, tBegin=-1.0, tEnd=12.0):
-        dd_load = dd.shotfile(Diagnostic, Shotnumber)
+        sfload = sf.SFREAD(Diagnostic, Shotnumber,
+                       experiment=Experiment, edition=Edition)
 
         self.Shotnumber = Shotnumber
-        self.tBegin =tBegin 
+        self.tBegin = tBegin 
         self.tEnd = tEnd
 
-        self.Nz = dd_load.getParameter(b'PARMV',b'N').data+1
-        self.NR = dd_load.getParameter(b'PARMV',b'M').data+1
-        Ntime = dd_load.getParameter(b'PARMV',b'NTIME').data
-        time = (dd_load.getSignal(b"time"))[0:Ntime]
-        idxTime = np.where( (time>=tBegin) & (time<=tEnd) )[0]
-        self.time = time[idxTime]
+        self.Nz = sfload.getparset("PARMV")["N"] + 1
+        self.NR = sfload.getparset("PARMV")["M"] + 1
+        Ntime = sfload.getparset("PARMV")["NTIME"]
+        time0 = sfload.getobject("time")[0:Ntime]
+        idxTime = np.where( (time0>=tBegin) & (time0<=tEnd) )[0]
+        self.time = time0[idxTime]
+        
+        
+        self.R = (sfload.getobject("Ri").T)[0:Ntime,0:self.NR][idxTime]
+        self.z = (sfload.getobject("Zj").T)[0:Ntime,0:self.Nz][idxTime]
 
-        self.R = (dd_load.getSignalGroup(b"Ri"))[0:Ntime,0:self.NR][idxTime]
-        self.z = (dd_load.getSignalGroup(b"Zj"))[0:Ntime,0:self.Nz][idxTime]
-        self.PsiOrigin = dd_load.getObjectData(b"PFM")[0:Ntime,0:self.Nz,0:self.NR][idxTime]
+        self.PsiOrigin = (sfload.getobject("PFM").T)[0:Ntime,0:self.Nz,0:self.NR][idxTime]
         ###magnetic axis,sxm
-        self.PsiSpecial = dd_load.getObjectData(b"PFxx")[0:Ntime][idxTime]   
+        self.PsiSpecial = (sfload.getobject("PFxx").T)[0:Ntime][idxTime]   
         ##time, R, z
         self.Psi = np.swapaxes(self.PsiOrigin,1,2)
         self.PsiAxis = self.PsiSpecial[:,0]
@@ -53,18 +53,13 @@ class EQH:
         self.rhopM = np.sqrt(np.abs((self.Psi.T-self.PsiAxis)/(self.PsiSep-self.PsiAxis))).T
         self.rhopM = np.swapaxes(self.rhopM,1,2)
 
-
-
-        dd_load.close()
-        # try:
-        dd_load = dd.shotfile('GQH', self.Shotnumber)
-        self.Rmag = dd_load.getSignal(b"Rmag")[idxTime]
-        self.zmag = dd_load.getSignal(b"Zmag")[idxTime]
-        self.Raus = dd_load.getSignal(b"Raus")[idxTime]
+        # get the axis and sepratrix positions
+        sfload = sf.SFREAD("GQH", Shotnumber,
+                       experiment=Experiment, edition=Edition)
+        self.Rmag = sfload.getobject("Rmag")[idxTime]
+        self.zmag = sfload.getobject("Zmag")[idxTime]
+        self.Raus = sfload.getobject("Raus")[idxTime]
         self.zaus = self.zmag
-        dd_load.close()
-        # except:
-            # print("Special points are not loaded (couldn't load GQH")
 
 
     def getrRhop_forTime(self, time_point):
