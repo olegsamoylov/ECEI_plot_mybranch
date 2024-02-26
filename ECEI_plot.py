@@ -1409,7 +1409,7 @@ class MyTableWidget(QWidget):
         sublayout_RzPl.addWidget(self.dtplot_lbl_RzPl, 3, 2)
         sublayout_RzPl.addWidget(self.dtplot_ed_RzPl, 3, 3)
         # Plot control
-        # sublayout_RzPl.addWidget(self.switch_plot_RzPl, 0, 12)
+        sublayout_RzPl.addWidget(self.switch_plot_RzPl, 0, 12)
         sublayout_RzPl.addWidget(self.ImgType_plot_RzPl, 1, 12)
         sublayout_RzPl.addWidget(self.type_plot_RzPl, 2, 12)
         sublayout_RzPl.addWidget(self.Save_plot_RzPl, 3, 7)
